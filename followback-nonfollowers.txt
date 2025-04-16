@@ -1,0 +1,129 @@
+// Ansu is back.
+// This code re-follows the person that do not follow you yet.
+// Like a reminder or Say Helo again or I will delete you if you do not follow me, last chances.
+// Go to your profile
+// Click Followers
+// Press F12 and open Chrome dev panel
+// Paste the code to Console tab.
+// Be patience.
+// After scrolling finishes the code asks you to go to Follows page in 10 secs
+// Click your Follows Page and wait the code to start scrolling
+// Wait and DO NOT CLOSE the PAGE. Keep page open till the progress end.
+// Fin.
+
+(async function blueskyFollowManagerV5() {
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  const notify = (msg) => {
+    const box = document.createElement("div");
+    box.style.position = "fixed";
+    box.style.top = "10px";
+    box.style.left = "50%";
+    box.style.transform = "translateX(-50%)";
+    box.style.background = "#222";
+    box.style.color = "#fff";
+    box.style.padding = "10px 20px";
+    box.style.zIndex = 99999;
+    box.style.fontSize = "16px";
+    box.style.borderRadius = "8px";
+    box.style.boxShadow = "0 0 10px #000";
+    box.innerText = msg;
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4000);
+  };
+
+  async function scrollToEnd() {
+    let last = -1, same = 0;
+    while (true) {
+      window.scrollTo(0, document.body.scrollHeight);
+      await delay(1000);
+      const now = document.documentElement.scrollTop || document.body.scrollTop;
+      if (now === last) {
+        same++;
+        if (same > 5) break;
+      } else {
+        same = 0;
+        last = now;
+      }
+    }
+  }
+
+  function extractHandles() {
+    const anchors = [...document.querySelectorAll('a[href*="/profile/"]')];
+    const handles = new Set();
+    anchors.forEach(a => {
+      const match = a.href.match(/\/profile\/([^\/\?#]+)/);
+      if (match) handles.add(match[1]);
+    });
+    return [...handles];
+  }
+
+  // STEP 1: Followers
+  notify("🔵 Step 1: Followers page detected. Scrolling...");
+  await scrollToEnd();
+  const followers = extractHandles();
+  console.log("Followers:", followers);
+  notify(`✅ ${followers.length} follower has been found`);
+  await delay(3000);
+
+  // STEP 2: To the follows page
+  notify("⏳ Now click Follows page. 10 seconds to go...");
+  await delay(10000);
+
+  // STEP 3: Follows
+  notify("🟢 Adım 2: Follows page detected. Scrolling...");
+  await scrollToEnd();
+  const follows = extractHandles();
+  console.log("Follows:", follows);
+  notify(`✅ ${follows.length} person found`);
+  await delay(2000);
+
+  // STEP 4: Find person that do not follows you.
+  const notFollowingBack = follows.filter(h => !followers.includes(h));
+  console.log("❌ Geri takip etmeyenler:", notFollowingBack);
+  notify(`❌ ${notFollowingBack.length} person do not follow you.`);
+
+  // STEP 5: Unfollow and follow again
+  for (let i = 0; i < notFollowingBack.length; i++) {
+    const handle = notFollowingBack[i];
+    notify(`🔁 ${i + 1}/${notFollowingBack.length} – ${handle} in progress...`);
+
+    // Find profile link
+    const profileLink = [...document.querySelectorAll('a[href*="/profile/"]')]
+      .find(a => a.href.includes(handle));
+
+    if (!profileLink) {
+      console.warn(`❌ ${handle} – FÜNF! Do not found profile link`);
+      continue;
+    }
+
+    // Go top find button
+    let el = profileLink;
+    let btn = null;
+    for (let j = 0; j < 5; j++) {
+      el = el.parentElement;
+      if (!el) break;
+      btn = el.querySelector('button');
+      if (btn) break;
+    }
+
+    if (!btn) {
+      console.warn(`❌ ${handle} – FÜNF! Cannot found button`);
+      continue;
+    }
+
+    // 1. Unfollow
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    console.log(`⛔ ${handle} unfollowed`);
+
+    await delay(1000);
+
+    // 2. Re-follow
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    console.log(`✅ ${handle} re-followed`);
+
+    await delay(2000 + Math.floor(Math.random() * 2000)); // Wait 2–4 secs. Randomize click seq.
+  }
+
+  notify("🎉 Job done!");
+})();
