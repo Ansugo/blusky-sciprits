@@ -1,0 +1,58 @@
+// Ansu is back.
+// This code follow back to any person that followed you.
+// Just go to your profile and click Followers
+// Press F12 and open Chrome dev panel
+// Paste the code to Console tab.
+// Be patience.
+// Change or add
+// btn.innerText.toLowerCase().includes('follow back')
+// for your lang.
+
+
+(async function autoFollowBack() {
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+  const log = console.log;
+  let totalFollowed = 0;
+
+  log("🚀 Page scrolling starts...");
+
+  // Scroll to end
+  async function autoScrollToEnd() {
+    let lastScrollTop = -1;
+    while (true) {
+      window.scrollTo(0, document.body.scrollHeight);
+      await delay(1000);
+      let currentScrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      if (currentScrollTop === lastScrollTop) break;
+      lastScrollTop = currentScrollTop;
+    }
+    log("✅ Page scrolled to the end.");
+  }
+
+  // Find all buttons and click em all
+  async function followEveryone() {
+    const buttons = [...document.querySelectorAll('button')].filter(btn =>
+      btn.innerText.toLowerCase().includes('follow back') ||
+      btn.innerText.toLowerCase().includes('takip et') // Türkçe destek
+    );
+
+    log(`🔍 Toplam ${buttons.length} person found. Follow back stars...`);
+
+    for (let i = 0; i < buttons.length; i++) {
+      const btn = buttons[i];
+      try {
+        btn.click();
+        totalFollowed++;
+        log(`👤 ${i + 1}. kişi takip edildi.`);
+        await delay(1500); // Wait timing
+      } catch (e) {
+        log(`⚠️ Fünf! : ${e}`);
+      }
+    }
+  }
+
+  await autoScrollToEnd();
+  await followEveryone();
+
+  log(`🎉 Job done. Total followed person : ${totalFollowed}`);
+})();
