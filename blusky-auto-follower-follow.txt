@@ -1,0 +1,93 @@
+// This code follows the unfollowed of a blusky member.
+// Just point your browser to https://bsky.app/profile/USER/followers
+// Press F12 and open Chrome dev panel
+// Paste the code to Console tab.
+// Be patience.
+// Change;
+// btnText.includes("follow") || 
+// btnText.includes("takip et")
+// to your lang.
+	  
+
+(async function followOnlyNonFollowedUsers() {
+  const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+  const notify = (msg) => {
+    const box = document.createElement("div");
+    box.style.position = "fixed";
+    box.style.top = "10px";
+    box.style.left = "50%";
+    box.style.transform = "translateX(-50%)";
+    box.style.background = "#222";
+    box.style.color = "#fff";
+    box.style.padding = "10px 20px";
+    box.style.zIndex = 99999;
+    box.style.fontSize = "14px";
+    box.style.borderRadius = "8px";
+    box.style.boxShadow = "0 0 10px #000";
+    box.innerText = msg;
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4000);
+  };
+
+  // Scroll to bottom
+  notify("⏬ Page scrolling to the end...");
+  let last = -1, same = 0;
+  while (true) {
+    window.scrollTo(0, document.body.scrollHeight);
+    await delay(1000);
+    const now = document.documentElement.scrollTop || document.body.scrollTop;
+    if (now === last) {
+      same++;
+      if (same > 5) break;
+    } else {
+      same = 0;
+      last = now;
+    }
+  }
+
+  notify("✅ Scrolling ends. Starting to follow...");
+
+  const profileLinks = [...document.querySelectorAll('a[href*="/profile/"]')];
+  const handled = new Set();
+  let followedCount = 0;
+
+  for (let a of profileLinks) {
+    const match = a.href.match(/\/profile\/([^\/\?#]+)/);
+    if (!match) continue;
+    const handle = match[1];
+    if (handled.has(handle)) continue;
+    handled.add(handle);
+
+    let el = a;
+    let btn = null;
+    for (let i = 0; i < 5; i++) {
+      el = el.parentElement;
+      if (!el) break;
+      btn = el.querySelector("button");
+      if (btn) break;
+    }
+
+    if (!btn || btn.offsetParent === null) continue;
+
+    // 👇 Check text
+    const btnText = btn.innerText.toLowerCase().trim();
+    if (
+      btnText.includes("follow") || 
+      btnText.includes("takip et")
+    ) {
+      try {
+        btn.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+        console.log(`✅ Followed: @${handle}`);
+        followedCount++;
+        await delay(1000 + Math.floor(Math.random() * 1500));
+      } catch (err) {
+        console.warn(`⚠️ @${handle} click error:`, err);
+      }
+    } else {
+      console.log(`ℹ️ @${handle} already followed (passed)`);
+    }
+  }
+
+  notify(`🎉 Job done: ${followedCount} new person has been followed.`);
+})();
