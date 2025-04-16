@@ -1,3 +1,4 @@
+// Ansu is back.
 // This code follows the unfollowed of a blusky member.
 // Just point your browser to https://bsky.app/profile/USER/followers
 // Press F12 and open Chrome dev panel
