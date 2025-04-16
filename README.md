@@ -1,6 +1,6 @@
 Ansu is back
 
-blusky-autofollower-follow.txt
+blusky-auto-follower-follow.txt
 * Chrome Script
 * Follows the unfollowed of a blusky member.
 * Just point your browser to https://bsky.app/profile/USER/followers
